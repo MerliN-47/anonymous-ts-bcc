@@ -1,4 +1,4 @@
-# TS-RAG-2: Scaling, Multimodal Representation Alignment, and System-Level Acceleration for Retrieval-Augmented Time Series Forecasting
+# Beyond Context Concatenation: Scalable, Manifold-Aligned Retrieval for Time-Series Foundation Models
 *(Anonymized Codebase for Double-Blind Peer Review)*
 
 ---
