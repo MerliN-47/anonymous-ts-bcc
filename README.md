@@ -1,4 +1,4 @@
-# TS-RAG-2: Scaling, Multimodal Representation Alignment, and System-Level Acceleration for Retrieval-Augmented Time Series Forecasting
+# Beyond Context Concatenation: Scalable, Manifold-Aligned Retrieval for Time-Series Foundation Models
 *(Anonymized Codebase for Double-Blind Peer Review)*
 
 ---
@@ -16,53 +16,46 @@ This repository contains the official, anonymized implementation of **TS-RAG-2**
 
 ---
 
-```
 ## 📂 Repository Layout
 
-```text
+```
 anonymous-ts-rag-2/
-├── README.md                          ← Master operational guide &amp; reproduction runbook
+├── README.md                          ← Master operational guide & reproduction runbook
 ├── requirements.txt                   ← Python dependency specification
 ├── environment.yml                    ← Conda environment specification
 ├── evaluate_fev_bench.py              ← Entrypoint for downstream covariate RAG evaluations
 ├── zeroshot.py                        ← Entrypoint for main zero-shot forecasting sweeps
 │
-├── models/                            ← Architecture &amp; fusion modules
+├── models/                            ← Architecture & fusion modules
 │   ├── backbone_interface.py          ← Universal wrapper (Chronos-Bolt, Chronos-2, Moirai-2.0, TimesFM-2.5)
 │   ├── injection_heads.py             ← Linear injection hierarchy (Latent ARM, Output W2, Token In-Context)
-│   ├── covariate_and_text.py          ← Pretrained CovariateQueryEmbedder &amp; BGE Text Adapter
-│   └── scaling_manifold.py            ← Power-law scaling fitter &amp; intrinsic manifold rank estimator
+│   ├── covariate_and_text.py          ← Pretrained CovariateQueryEmbedder & BGE Text Adapter
+│   └── scaling_manifold.py            ← Power-law scaling fitter & intrinsic manifold rank estimator
 │
-├── data_provider/                     ← Data loaders &amp; split isolators
+├── data_provider/                     ← Data loaders & split isolators
 │   ├── fevbench_loader.py             ← 30 known-covariate planning tasks (fev-bench)
 │   ├── multimodal_loader.py           ← Context-is-Key macroeconomic text event loader
 │   └── ts_loader.py                   ← ETT (ETTh1-ETTm2), Weather, Traffic, Exchange, Electricity
 │
 ├── benchmarks/                        ← Systems profiling harness
-│   └── profile_systems_throughput.py ← VRAM, latency (ms), GFLOPs, &amp; OOM profiling grid (B, k, L)
+│   └── profile_systems_throughput.py ← VRAM, latency (ms), GFLOPs, & OOM profiling grid (B, k, L)
 │
-├── utils/                             ← Mathematical tools &amp; config parsing
+├── utils/                             ← Mathematical tools & config parsing
 │   ├── run_config.py                  ← Explicit CLI argument schema
 │   ├── metrics.py                     ← Metrics (MSE, MAE, CRPS, WQL, Coverage@80)
 │   ├── tost_equivalence.py            ← Paired Two One-Sided Tests (\epsilon = 0.005)
-│   └── faiss_index.py                 ← Knowledge base index builder &amp; search wrapper
+│   └── faiss_index.py                 ← Knowledge base index builder & search wrapper
 │
-├── scripts/                           ← Reproducibility scripts &amp; unit test suites
-│   ├── test_guardrails_paper2.py     ← PyTest guardrail suite (verifies frozen parameters &amp; TOST)
-│   ├── run_table1_systems_grid.sh     ← One-line runner for Systems Throughput &amp; VRAM Profiling Grid
+├── scripts/                           ← Reproducibility scripts & unit test suites
+│   ├── test_guardrails_paper2.py     ← PyTest guardrail suite (verifies frozen parameters & TOST)
+│   ├── run_table1_systems_grid.sh     ← One-line runner for Systems Throughput & VRAM Profiling Grid
 │   ├── run_fevbench_eval.sh           ← One-line runner for Downstream Covariate RAG (fev-bench)
-│   ├── run_scaling_laws.sh            ← One-line runner for 24-point Memory Scaling &amp; Manifold Rank
+│   ├── run_scaling_laws.sh            ← One-line runner for 24-point Memory Scaling & Manifold Rank
 │   └── run_multimodal_eval.sh         ← One-line runner for Multimodal Text Event Grounding
 │
-└── checkpoints/                       ← Pretrained adapter weights &amp; FAISS index samples
+└── checkpoints/                       ← Pretrained adapter weights & FAISS index samples
     ├── README.md                      ← Anonymous download links (Anonymous OSF)
     └── covariate_embedder_10k.pt      ← Lightweight adapter weights (~1.84M params)
-
-```
-
-```
-
----
 ```
 
 ---
@@ -78,37 +71,66 @@ cd anonymous-ts-rag-2
 # Create and activate conda environment
 conda env create -f environment.yml
 conda activate ts_rag
-2. Manual Pip Installation
+```
+
+### 2. Manual Pip Installation
+```bash
 pip install -r requirements.txt
-Required Dependencies: torch>=2.2.0, transformers>=4.41.2, faiss-gpu>=1.7.4, gluonts>=0.14.0, scipy>=1.11.0, pydantic>=2.0.
-________________________________________
-🚀 Reproduction Quickstart
-1. Run Automated Unit Test Guardrails
-Verify environment integrity, model parameter freezing (\(\nabla_\theta = 0\)), VRAM linearity, and TOST equivalence bounds:
-python -m pytest scripts/test_guardrails_paper2.py -v
-2. Table 1: Systems Throughput, FLOPs & VRAM Scaling Grid
-Profile latency (ms), VRAM footprint (MB), and OOM boundaries across \(B \in {1, 8, 32, 128}\), \(k \in {1, 10, 25, 50}\), and \(L = 1024\):
-bash scripts/run_table1_systems_grid.sh
-3. Table 2: Downstream Aligned Covariate RAG (fev-bench)
-Reproduce supervised covariate-conditioned retrieval on the 30 known-covariate planning tasks in fev-bench:
-bash scripts/run_fevbench_eval.sh
-4. Memory Scaling Laws & Intrinsic Manifold Rank
-Fit memory scaling laws (\(\epsilon(n) = \epsilon_\infty + B n^{-\alpha}\)) across 24 dataset points and estimate intrinsic rank (\(r = 43, d_{\text{int}} = 12.49\)):
-bash scripts/run_scaling_laws.sh
-5. Multimodal Text Event Grounding (Macroeconomic Shocks)
-Evaluate cross-modal text-event grounding (bge-large-en) under macroeconomic shock interventions:
-bash scripts/run_multimodal_eval.sh
-________________________________________
-⚡ Hardware Specs & Determinism
-•	Hardware: Evaluated on NVIDIA GPUs (Blackwell / RTX Pro / A100 architectures).
-•	Execution Determinism: All zero-shot evaluations under a fixed FAISS index execute with \(\text{std} = 0.0000\) across 5 distinct random partition seeds (42, 101, 2023, 777, 999), confirming that observed gains reflect systematic architectural improvements rather than stochastic evaluation drift.
-________________________________________
-📄 Pretrained Weights Download
-Lightweight adapter checkpoints (such as covariate_embedder_10k.pt, ~1.84M parameters) are anonymously hosted on Open Science Framework (OSF):
-•	Anonymous OSF Repository: https://osf.io/anonymous-ts-rag-2-checkpoints/
-•	Download instructions and verification SHA-256 hashes are listed in checkpoints/README.md.
-________________________________________
-📜 License & Anonymization Notice
-This project is released under the MIT License for anonymous conference review. All code, metadata, and scripts have been fully sanitized to satisfy double-blind submission guidelines.
+```
+
+*Required Dependencies:* `torch>=2.2.0`, `transformers>=4.41.2`, `faiss-gpu>=1.7.4`, `gluonts>=0.14.0`, `scipy>=1.11.0`, `pydantic>=2.0`.
 
 ---
+
+## 🚀 Reproduction Quickstart
+
+### 1. Run Automated Unit Test Guardrails
+Verify environment integrity, model parameter freezing (\\(\nabla_\theta = 0\\)), VRAM linearity, and TOST equivalence bounds:
+```bash
+python -m pytest scripts/test_guardrails_paper2.py -v
+```
+
+### 2. Table 1: Systems Throughput, FLOPs & VRAM Scaling Grid
+Profile latency (ms), VRAM footprint (MB), and OOM boundaries across \\(B \in \{1, 8, 32, 128\}\\), \\(k \in \{1, 10, 25, 50\}\\), and \\(L = 1024\\):
+```bash
+bash scripts/run_table1_systems_grid.sh
+```
+
+### 3. Table 2: Downstream Aligned Covariate RAG (`fev-bench`)
+Reproduce supervised covariate-conditioned retrieval on the 30 known-covariate planning tasks in `fev-bench`:
+```bash
+bash scripts/run_fevbench_eval.sh
+```
+
+### 4. Memory Scaling Laws & Intrinsic Manifold Rank
+Fit memory scaling laws (\\(\epsilon(n) = \epsilon_\infty + B n^{-\alpha}\\)) across 24 dataset points and estimate intrinsic rank (\\(r = 43, d_{\text{int}} = 12.49\\)):
+```bash
+bash scripts/run_scaling_laws.sh
+```
+
+### 5. Multimodal Text Event Grounding (Macroeconomic Shocks)
+Evaluate cross-modal text-event grounding (`bge-large-en`) under macroeconomic shock interventions:
+```bash
+bash scripts/run_multimodal_eval.sh
+```
+
+---
+
+## ⚡ Hardware Specs & Determinism
+
+- **Hardware:** Evaluated on NVIDIA GPUs (Blackwell / RTX Pro / A100 architectures).
+- **Execution Determinism:** All zero-shot evaluations under a fixed FAISS index execute with **\\(\text{std} = 0.0000\\)** across 5 distinct random partition seeds (`42, 101, 2023, 777, 999`), confirming that observed gains reflect systematic architectural improvements rather than stochastic evaluation drift.
+
+---
+
+## 📄 Pretrained Weights Download
+
+Lightweight adapter checkpoints (such as `covariate_embedder_10k.pt`, ~1.84M parameters) are anonymously hosted on Open Science Framework (OSF):
+- **Anonymous OSF Repository:** `https://osf.io/anonymous-ts-rag-2-checkpoints/`
+- Download instructions and verification SHA-256 hashes are listed in `checkpoints/README.md`.
+
+---
+
+## 📜 License & Anonymization Notice
+
+This project is released under the MIT License for anonymous conference review. All code, metadata, and scripts have been fully sanitized to satisfy double-blind submission guidelines.
