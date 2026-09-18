@@ -16,9 +16,54 @@ This repository contains the official, anonymized implementation of **TS-RAG-2**
 
 ---
 
+```
 ## 📂 Repository Layout
 
-anonymous-ts-rag-2/ ├── README.md ← Master operational guide & reproduction runbook ├── requirements.txt ← Python dependency specification ├── environment.yml ← Conda environment specification ├── evaluate_fev_bench.py ← Entrypoint for downstream covariate RAG evaluations ├── zeroshot.py ← Entrypoint for main zero-shot forecasting sweeps │ ├── models/ ← Architecture & fusion modules │ ├── backbone_interface.py ← Universal wrapper (Chronos-Bolt, Chronos-2, Moirai-2.0, TimesFM-2.5) │ ├── injection_heads.py ← Linear injection hierarchy (Latent ARM, Output W2, Token In-Context) │ ├── covariate_and_text.py ← Pretrained CovariateQueryEmbedder & BGE Text Adapter │ └── scaling_manifold.py ← Power-law scaling fitter & intrinsic manifold rank estimator │ ├── data_provider/ ← Data loaders & split isolators │ ├── fevbench_loader.py ← 30 known-covariate planning tasks (fev-bench) │ ├── multimodal_loader.py ← Context-is-Key macroeconomic text event loader │ └── ts_loader.py ← ETT (ETTh1-ETTm2), Weather, Traffic, Exchange, Electricity │ ├── benchmarks/ ← Systems profiling harness │ └── profile_systems_throughput.py ← VRAM, latency (ms), GFLOPs, & OOM profiling grid (B, k, L) │ ├── utils/ ← Mathematical tools & config parsing │ ├── run_config.py ← Explicit CLI argument schema │ ├── metrics.py ← Metrics (MSE, MAE, CRPS, WQL, Coverage@80) │ ├── tost_equivalence.py ← Paired Two One-Sided Tests (\epsilon = 0.005) │ └── faiss_index.py ← Knowledge base index builder & search wrapper │ ├── scripts/ ← Reproducibility scripts & unit test suites │ ├── test_guardrails_paper2.py ← PyTest guardrail suite (verifies frozen parameters & TOST) │ ├── run_table1_systems_grid.sh ← One-line runner for Systems Throughput & VRAM Profiling Grid │ ├── run_fevbench_eval.sh ← One-line runner for Downstream Covariate RAG (fev-bench) │ ├── run_scaling_laws.sh ← One-line runner for 24-point Memory Scaling & Manifold Rank │ └── run_multimodal_eval.sh ← One-line runner for Multimodal Text Event Grounding │ └── checkpoints/ ← Pretrained adapter weights & FAISS index samples ├── README.md ← Anonymous download links (Anonymous OSF) └── covariate_embedder_10k.pt ← Lightweight adapter weights (~1.84M params)
+```text
+anonymous-ts-rag-2/
+├── README.md                          ← Master operational guide &amp; reproduction runbook
+├── requirements.txt                   ← Python dependency specification
+├── environment.yml                    ← Conda environment specification
+├── evaluate_fev_bench.py              ← Entrypoint for downstream covariate RAG evaluations
+├── zeroshot.py                        ← Entrypoint for main zero-shot forecasting sweeps
+│
+├── models/                            ← Architecture &amp; fusion modules
+│   ├── backbone_interface.py          ← Universal wrapper (Chronos-Bolt, Chronos-2, Moirai-2.0, TimesFM-2.5)
+│   ├── injection_heads.py             ← Linear injection hierarchy (Latent ARM, Output W2, Token In-Context)
+│   ├── covariate_and_text.py          ← Pretrained CovariateQueryEmbedder &amp; BGE Text Adapter
+│   └── scaling_manifold.py            ← Power-law scaling fitter &amp; intrinsic manifold rank estimator
+│
+├── data_provider/                     ← Data loaders &amp; split isolators
+│   ├── fevbench_loader.py             ← 30 known-covariate planning tasks (fev-bench)
+│   ├── multimodal_loader.py           ← Context-is-Key macroeconomic text event loader
+│   └── ts_loader.py                   ← ETT (ETTh1-ETTm2), Weather, Traffic, Exchange, Electricity
+│
+├── benchmarks/                        ← Systems profiling harness
+│   └── profile_systems_throughput.py ← VRAM, latency (ms), GFLOPs, &amp; OOM profiling grid (B, k, L)
+│
+├── utils/                             ← Mathematical tools &amp; config parsing
+│   ├── run_config.py                  ← Explicit CLI argument schema
+│   ├── metrics.py                     ← Metrics (MSE, MAE, CRPS, WQL, Coverage@80)
+│   ├── tost_equivalence.py            ← Paired Two One-Sided Tests (\epsilon = 0.005)
+│   └── faiss_index.py                 ← Knowledge base index builder &amp; search wrapper
+│
+├── scripts/                           ← Reproducibility scripts &amp; unit test suites
+│   ├── test_guardrails_paper2.py     ← PyTest guardrail suite (verifies frozen parameters &amp; TOST)
+│   ├── run_table1_systems_grid.sh     ← One-line runner for Systems Throughput &amp; VRAM Profiling Grid
+│   ├── run_fevbench_eval.sh           ← One-line runner for Downstream Covariate RAG (fev-bench)
+│   ├── run_scaling_laws.sh            ← One-line runner for 24-point Memory Scaling &amp; Manifold Rank
+│   └── run_multimodal_eval.sh         ← One-line runner for Multimodal Text Event Grounding
+│
+└── checkpoints/                       ← Pretrained adapter weights &amp; FAISS index samples
+    ├── README.md                      ← Anonymous download links (Anonymous OSF)
+    └── covariate_embedder_10k.pt      ← Lightweight adapter weights (~1.84M params)
+
+```
+
+```
+
+---
+```
 
 ---
 
