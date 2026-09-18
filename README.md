@@ -1,4 +1,4 @@
-# Beyond Context Concatenation: Scalable, Manifold-Aligned Retrieval for Time-Series Foundation Models
+# TS-RAG-2: Scaling, Multimodal Representation Alignment, and System-Level Acceleration for Retrieval-Augmented Time Series Forecasting
 *(Anonymized Codebase for Double-Blind Peer Review)*
 
 ---
@@ -8,17 +8,27 @@
 This repository contains the official, anonymized implementation of **TS-RAG-2**, focusing on the **systems efficiency, non-parametric scaling laws, representation alignment, and multimodal event grounding** of retrieval-augmented time series foundation models (TSFMs).
 
 ### Key Architectural & Empirical Breakthroughs
-1. **Linear Injection Hierarchy vs. Quadratic In-Context Concatenation:** Demonstrates that popular token-space concatenation (TimesFM-ICF style) incurs a massive **46.70x theoretical FLOP / VRAM penalty** (\\(O((L + k(L+H))^2)\\)), triggering Out-Of-Memory (OOM) failures at \\(B=128, k=50\\). In contrast, **Latent Cross-Attention (ARM)** and **Output Wasserstein-2 Quantile Barycentering** maintain strict linear throughput (\\(O(L \cdot k)\\)), achieving a **100% completion rate (0 OOMs)** across 432 profiled grid points.
-2. **Paired TOST Representation Parity (\\(p < 10^{-6}\\)):** Paired Two One-Sided Tests (\\(\text{TOST}, \epsilon = 0.005\\)) across 5 bootstrapped seeds statistically prove that Latent ARM achieves **exact representation parity** with Token Concatenation (\\(\bar{\Delta}_{\text{CRPS}} = -0.000080, 90\% \text{ CI } [-0.000412, +0.000252]\\)) while eliminating 46.70x compute/memory overhead.
-3. **Aligned Covariate RAG (`fev-bench`):** Introduces a 10k-step supervised `CovariateQueryEmbedder` (\\(\sim 1.84\text{M}\\) parameters) that bridges exogenous planning signals, yielding a **+11.18% / +54.20% CRPS improvement** across 30 known-covariate planning tasks (`fev-bench`) and outperforming RAFT and \\(k\\)-NN baselines by **>23%**.
-4. **Non-Parametric Scaling Laws & Manifold Metric Contraction:** Fits memory scaling laws (\\(\epsilon(n) = \epsilon_\infty + B n^{-\alpha}\\)) across 24 dataset points (\\(n \in [10^4, 10^8] \times 3 \text{ seeds}\\)). The observed scaling exponent **\\(\alpha = 0.0785 \pm 0.0033\\)** (\\(R^2 = 0.9995\\)) lands squarely inside the theoretical minimax bound \\([0.0444, 0.1380]\\) derived from local intrinsic manifold rank (\\(r = 43, d_{\text{int}} = 12.49\\)).
-5. **Multimodal Event Grounding:** Integrates timestamped text event streams (`bge-large-en`) with time-series dynamics, reducing macroeconomic shock forecasting error from \\(0.8329 \to 0.7686\\).
+
+1. **Linear Injection Hierarchy vs. Quadratic In-Context Concatenation:** 
+   Demonstrates that popular token-space concatenation (TimesFM-ICF style) incurs a massive **46.70x theoretical FLOP and VRAM penalty** ($O((L + k(L+H))^2)$), triggering Out-Of-Memory (OOM) failures at batch size $B=128$, context length $L=1024$, and retrieval budget $k=50$. In contrast, **Latent Cross-Attention (ARM)** and **Output Wasserstein-2 Quantile Barycentering** maintain strict linear throughput ($O(L \cdot k)$), achieving a **100% completion rate (0 OOMs)** across 432 profiled parameter grid points.
+
+2. **Paired TOST Representation Parity ($p < 10^{-6}$):** 
+   Paired Two One-Sided Tests ($\text{TOST}, \epsilon = 0.005$) across 5 bootstrapped seeds statistically prove that Latent ARM achieves **exact representation parity** with Token Concatenation ($\bar{\Delta}_{\text{CRPS}} = -0.000080$, $90\%$ CI $[-0.000412, +0.000252]$) while eliminating 46.70x compute/memory overhead.
+
+3. **Aligned Covariate RAG (`fev-bench`):** 
+   Introduces a 10k-step supervised `CovariateQueryEmbedder` ($\sim 1.84\text{M}$ parameters) that aligns exogenous planning signals with the representation manifold, producing a **+11.18% / +54.20% CRPS improvement** across 30 known-covariate planning tasks (`fev-bench`) and outperforming RAFT and $k$-NN baselines by **>23%**.
+
+4. **Non-Parametric Scaling Laws & Manifold Metric Contraction:** 
+   Fits memory scaling laws ($\epsilon(n) = \epsilon_\infty + B n^{-\alpha}$) across 24 dataset points ($n \in [10^4, 10^8] \times 3 \text{ seeds}$). The observed scaling exponent **$\alpha = 0.0785 \pm 0.0033$** ($R^2 = 0.9995$) lands squarely inside the theoretical minimax bound $[0.0444, 0.1380]$ derived from local intrinsic manifold rank ($r = 43$, $d_{\text{int}} = 12.49$).
+
+5. **Multimodal Event Grounding:** 
+   Integrates timestamped text event streams (`bge-large-en`) with time-series dynamics, reducing macroeconomic shock forecasting error from $0.8329 \to 0.7686$.
 
 ---
 
 ## 📂 Repository Layout
 
-```
+```text
 anonymous-ts-rag-2/
 ├── README.md                          ← Master operational guide & reproduction runbook
 ├── requirements.txt                   ← Python dependency specification
@@ -60,9 +70,59 @@ anonymous-ts-rag-2/
 
 ---
 
+## 🧮 Mathematical Formulations
+
+### 1. Matched-Compute Attention Complexity
+
+$$
+\text{FLOPs}_{\text{Token}} = O\left( B \cdot \left( L + k(L + H) \right)^2 \cdot d \right)
+$$
+
+$$
+\text{FLOPs}_{\text{Latent}} = O\left( B \cdot \left( L^2 + k \cdot L \right) \cdot d \right)
+$$
+
+$$
+\text{FLOPs}_{\text{Output}} = O\left( B \cdot \left( L^2 + k \cdot H \right) \cdot d \right)
+$$
+
+### 2. Knowledge-Base Power-Law Scaling & Intrinsic Rank Bound
+
+$$
+\epsilon(n) = \epsilon_\infty + B \cdot n^{-\alpha}, \quad \text{where } \alpha_{\text{theory}} \approx \frac{2}{2 + r}
+$$
+
+### 3. Aligned Covariate-Conditioned Distance Metric
+
+$$
+e_q = \text{CovariateQueryEmbedder}(x_q, \mathbf{c}_{q, 1:H})
+$$
+
+$$
+d_{\text{cov}}(q, i) = \| e_q - \text{ChannelBlockEncoder}(x_i, \mathbf{c}_{i, 1:H}) \|_2
+$$
+
+---
+
+## 🔒 Data Lineage & Chronological Split Isolation
+
+To prevent zero-shot target leakage, all datasets are chronologically partitioned into four strictly disjoint subsets:
+
+$$
+\mathcal{D}_{\text{memory}} \cap \mathcal{D}_{\text{controller-train}} \cap \mathcal{D}_{\text{cal}} \cap \mathcal{D}_{\text{test}} = \emptyset
+$$
+
+1. **$\mathcal{D}_{\text{memory}}$ ($t \le T_1$):** Historical sequence pool indexed in the FAISS vector database.
+2. **$\mathcal{D}_{\text{controller-train}}$ ($T_1 < t \le T_2$):** Disjoint partition used to train the lightweight selective utility controller MLP ($\phi$).
+3. **$\mathcal{D}_{\text{cal}}$ ($T_2 < t \le T_3$):** Calibration split used to compute non-conformity quantiles ($\hat{Q}_{1-\alpha}$).
+4. **$\mathcal{D}_{\text{test}}$ ($t > T_3$):** Strict zero-shot evaluation windows; test targets $y_q$ are strictly withheld.
+
+---
+
 ## 🛠️ Installation & Environment Setup
 
 ### 1. Conda Setup
+
 ```bash
 # Clone the anonymous repository
 git clone https://anonymous.4open.science/r/anonymous-ts-rag-2/
@@ -74,6 +134,7 @@ conda activate ts_rag
 ```
 
 ### 2. Manual Pip Installation
+
 ```bash
 pip install -r requirements.txt
 ```
@@ -85,13 +146,13 @@ pip install -r requirements.txt
 ## 🚀 Reproduction Quickstart
 
 ### 1. Run Automated Unit Test Guardrails
-Verify environment integrity, model parameter freezing (\\(\nabla_\theta = 0\\)), VRAM linearity, and TOST equivalence bounds:
+Verify environment integrity, model parameter freezing ($\nabla_\theta = 0$), VRAM linearity, and TOST equivalence bounds:
 ```bash
 python -m pytest scripts/test_guardrails_paper2.py -v
 ```
 
 ### 2. Table 1: Systems Throughput, FLOPs & VRAM Scaling Grid
-Profile latency (ms), VRAM footprint (MB), and OOM boundaries across \\(B \in \{1, 8, 32, 128\}\\), \\(k \in \{1, 10, 25, 50\}\\), and \\(L = 1024\\):
+Profile latency (ms), VRAM footprint (MB), and OOM boundaries across $B \in \{1, 8, 32, 128\}$, $k \in \{1, 10, 25, 50\}$, and $L = 1024$:
 ```bash
 bash scripts/run_table1_systems_grid.sh
 ```
@@ -103,7 +164,7 @@ bash scripts/run_fevbench_eval.sh
 ```
 
 ### 4. Memory Scaling Laws & Intrinsic Manifold Rank
-Fit memory scaling laws (\\(\epsilon(n) = \epsilon_\infty + B n^{-\alpha}\\)) across 24 dataset points and estimate intrinsic rank (\\(r = 43, d_{\text{int}} = 12.49\\)):
+Fit memory scaling laws ($\epsilon(n) = \epsilon_\infty + B n^{-\alpha}$) across 24 dataset points and estimate intrinsic rank ($r = 43$, $d_{\text{int}} = 12.49$):
 ```bash
 bash scripts/run_scaling_laws.sh
 ```
@@ -119,7 +180,7 @@ bash scripts/run_multimodal_eval.sh
 ## ⚡ Hardware Specs & Determinism
 
 - **Hardware:** Evaluated on NVIDIA GPUs (Blackwell / RTX Pro / A100 architectures).
-- **Execution Determinism:** All zero-shot evaluations under a fixed FAISS index execute with **\\(\text{std} = 0.0000\\)** across 5 distinct random partition seeds (`42, 101, 2023, 777, 999`), confirming that observed gains reflect systematic architectural improvements rather than stochastic evaluation drift.
+- **Execution Determinism:** All zero-shot evaluations under a fixed FAISS index execute with **$\text{std} = 0.0000$** across 5 distinct random partition seeds (`42, 101, 2023, 777, 999`), confirming that observed gains reflect systematic architectural improvements rather than stochastic evaluation drift.
 
 ---
 
